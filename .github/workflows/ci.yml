@@ -19,3 +19,4 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
       - run: pytest
+      - run: python -m mcp_multi_agent.evaluation --min-routing 0.85 --min-completion 0.80

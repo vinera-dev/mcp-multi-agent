@@ -43,4 +43,4 @@ select = ["E", "F", "I", "B", "UP", "S", "C4", "SIM", "T20"]
 "tests/**" = ["S101", "S603"]
 
 [tool.setuptools.package-data]
-mcp_multi_agent = ["data/faq/*.md"]
+mcp_multi_agent = ["data/faq/*.md", "data/eval/*.jsonl"]
