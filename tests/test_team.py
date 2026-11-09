@@ -222,3 +222,64 @@ async def test_same_specialist_cannot_be_called_over_and_over(repository):
 
         assert result["answer"] == LOOP_MESSAGE
         assert result["trace"] == ["triage", "triage"]
+
+
+async def test_session_memory_is_shared_across_turns_with_a_checkpointer(repository):
+    from langgraph.checkpoint.memory import InMemorySaver
+
+    async with connected(repository) as toolbox:
+        model = ScriptedChatModel(
+            turns=[AssistantTurn(text="Price is 120.00.")],
+            decisions=[
+                route("billing"),
+                route("finish", reply="120.00"),
+                route("finish", reply="Yes, 120.00 for Rex."),
+            ],
+        )
+        team = build_team(model, toolbox, checkpointer=InMemorySaver())
+
+        await ask_team(team, "How much is a consultation?", session_id="s1")
+        second = await ask_team(team, "And for Rex?", session_id="s1")
+
+        contents = [m.get("content") for m in model.seen_structured[2]]
+        assert "How much is a consultation?" in contents
+        assert "Price is 120.00." in contents
+        assert contents[-1] == "And for Rex?"
+        assert second["trace"] == []
+
+
+async def test_sessions_do_not_share_memory(repository):
+    from langgraph.checkpoint.memory import InMemorySaver
+
+    async with connected(repository) as toolbox:
+        model = ScriptedChatModel(
+            decisions=[route("finish", reply="one"), route("finish", reply="two")]
+        )
+        team = build_team(model, toolbox, checkpointer=InMemorySaver())
+
+        await ask_team(team, "secret of session a", session_id="a")
+        await ask_team(team, "hello from b", session_id="b")
+
+        contents = [m.get("content") for m in model.seen_structured[1]]
+        assert "secret of session a" not in contents
+
+
+async def test_hop_limit_applies_per_turn_not_per_session(repository):
+    from langgraph.checkpoint.memory import InMemorySaver
+
+    async with connected(repository) as toolbox:
+        model = ScriptedChatModel(
+            turns=[AssistantTurn(text="a"), AssistantTurn(text="b")],
+            decisions=[
+                route("triage"),
+                route("finish", reply="one"),
+                route("billing"),
+                route("finish", reply="two"),
+            ],
+        )
+        team = build_team(model, toolbox, max_hops=1, checkpointer=InMemorySaver())
+
+        first = await ask_team(team, "q1", session_id="s")
+        second = await ask_team(team, "q2", session_id="s")
+
+        assert (first["answer"], second["answer"]) == ("one", "two")

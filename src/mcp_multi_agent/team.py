@@ -84,7 +84,7 @@ class Route(BaseModel):
 
 class TeamState(TypedDict):
     messages: Annotated[list[dict[str, Any]], operator.add]
-    trace: Annotated[list[str], operator.add]
+    trace: list[str]
     pending: str | None
     answer: str | None
 
@@ -158,6 +158,7 @@ def build_team(
     toolbox: McpToolbox,
     max_hops: int = MAX_HOPS,
     max_visits: int = MAX_VISITS_PER_AGENT,
+    checkpointer: Any = None,
 ):
     async def supervisor(state: TeamState) -> dict[str, Any]:
         messages = [{"role": "system", "content": supervisor_prompt()}, *state["messages"]]
@@ -173,7 +174,7 @@ def build_team(
     async def specialist(state: TeamState) -> dict[str, Any]:
         spec = SPECIALISTS[state["pending"]]
         produced, _ = await run_specialist(model, toolbox, spec, state["messages"])
-        return {"messages": produced, "trace": [spec.name], "pending": None}
+        return {"messages": produced, "trace": [*state["trace"], spec.name], "pending": None}
 
     def route(state: TeamState) -> str:
         return END if state["pending"] is None else "specialist"
@@ -184,10 +185,18 @@ def build_team(
     graph.add_edge(START, "supervisor")
     graph.add_conditional_edges("supervisor", route, {END: END, "specialist": "specialist"})
     graph.add_edge("specialist", "supervisor")
-    return graph.compile()
+    return graph.compile(checkpointer=checkpointer)
 
 
-async def ask_team(team, text: str, history: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+async def ask_team(
+    team,
+    text: str,
+    history: list[dict[str, Any]] | None = None,
+    session_id: str | None = None,
+) -> dict[str, Any]:
     messages = [*(history or []), {"role": "user", "content": text}]
-    state = await team.ainvoke({"messages": messages, "trace": [], "pending": None, "answer": None})
+    config = {"configurable": {"thread_id": session_id}} if session_id else None
+    state = await team.ainvoke(
+        {"messages": messages, "trace": [], "pending": None, "answer": None}, config
+    )
     return {"answer": state["answer"], "messages": state["messages"], "trace": state["trace"]}
