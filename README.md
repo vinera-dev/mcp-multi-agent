@@ -2,7 +2,7 @@
 
 A Model Context Protocol (MCP) server and a multi-agent system that coordinates specialist agents through it.
 
-> **Status:** early development. A minimal MCP server runs over stdio; the scheduling tools are next.
+> **Status:** early development. The MCP server exposes the scheduling tools over stdio; the FAQ tool is next.
 
 ## Purpose
 
@@ -41,7 +41,7 @@ The first command opens the web UI, the others run headless.
 
 ## Roadmap
 
-- [ ] 1. MCP server with scheduling tools and tests
+- [x] 1. MCP server with scheduling tools and tests
 - [ ] 2. FAQ tool backed by retrieval
 - [ ] 3. Single agent using the MCP tools
 - [ ] 4. Supervisor and specialist agents
