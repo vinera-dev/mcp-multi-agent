@@ -116,3 +116,19 @@ async def test_unknown_tool_is_an_error(server):
     result = await call(server, "drop_database", {})
 
     assert result.is_error is True
+
+
+async def test_get_price_returns_amount_and_installment_rule(server):
+    result = await call(server, "get_price", {"service": "exam"})
+
+    price = result.structured_content
+    assert result.is_error is False
+    assert price["amount"] == "150.00"
+    assert price["currency"] == "BRL"
+    assert price["installments_available"] is False
+
+
+async def test_get_price_rejects_unknown_services(server):
+    result = await call(server, "get_price", {"service": "surgery"})
+
+    assert result.is_error is True
