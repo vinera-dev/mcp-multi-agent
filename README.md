@@ -2,7 +2,7 @@
 
 A Model Context Protocol (MCP) server and a multi-agent system that coordinates specialist agents through it.
 
-> **Status:** planned, not started. This README describes the intended scope.
+> **Status:** early development. A minimal MCP server runs over stdio; the scheduling tools are next.
 
 ## Purpose
 
@@ -20,6 +20,24 @@ Show how to expose business capabilities as MCP tools and orchestrate several sp
 ## Planned stack
 
 Python, MCP Python SDK, LangGraph, FastAPI, pytest, GitHub Actions.
+
+## Running the server
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+python -m mcp_multi_agent.server
+```
+
+The server speaks MCP over stdio. To inspect it with the [MCP Inspector](https://github.com/modelcontextprotocol/inspector):
+
+```bash
+npx @modelcontextprotocol/inspector python -m mcp_multi_agent.server
+npx @modelcontextprotocol/inspector --cli python -m mcp_multi_agent.server --method tools/list
+npx @modelcontextprotocol/inspector --cli python -m mcp_multi_agent.server   --method tools/call --tool-name clinic_info
+```
+
+The first command opens the web UI, the others run headless.
 
 ## Roadmap
 

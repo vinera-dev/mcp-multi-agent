@@ -5,6 +5,7 @@ server = MCPServer("vet-clinic")
 
 @server.tool()
 def clinic_info() -> dict[str, str]:
+    """Return the clinic name, opening hours and appointment slot length."""
     return {
         "name": "Happy Paws Veterinary Clinic",
         "hours": "Monday to Saturday, 08:00 to 18:00",
