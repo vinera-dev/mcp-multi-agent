@@ -5,6 +5,7 @@ from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 from pydantic import Field
 
+from mcp_multi_agent.faq import FaqHit, FaqIndex, load_entries
 from mcp_multi_agent.scheduling.models import Appointment, ServiceType
 from mcp_multi_agent.scheduling.repository import InMemoryAppointmentRepository
 from mcp_multi_agent.scheduling.service import SchedulingError, SchedulingService
@@ -17,8 +18,11 @@ def tool_error(error: SchedulingError) -> ToolError:
     return ToolError(f"{error.code}: {error.message}")
 
 
-def build_server(service: SchedulingService | None = None) -> MCPServer:
+def build_server(
+    service: SchedulingService | None = None, faq: FaqIndex | None = None
+) -> MCPServer:
     scheduling = service or SchedulingService(InMemoryAppointmentRepository())
+    faq_index = faq or FaqIndex(load_entries())
     server = MCPServer("vet-clinic")
 
     @server.tool()
@@ -60,6 +64,14 @@ def build_server(service: SchedulingService | None = None) -> MCPServer:
             return scheduling.cancel(appointment_id)
         except SchedulingError as error:
             raise tool_error(error) from error
+
+    @server.tool()
+    def search_faq(
+        query: Annotated[str, Field(min_length=1, max_length=300)],
+        top_k: Annotated[int, Field(ge=1, le=5)] = 3,
+    ) -> list[FaqHit]:
+        """Search the clinic FAQ (hours, vaccines, grooming, exams, payments, cancellations)."""
+        return faq_index.search(query, top_k)
 
     return server
 
