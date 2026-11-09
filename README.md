@@ -52,7 +52,7 @@ The endpoint is `http://127.0.0.1:8000/mcp`. The FAQ tool uses a small BM25 inde
 - [x] 1. MCP server with scheduling tools and tests
 - [x] 2. FAQ tool backed by retrieval
 - [x] 3. Single agent using the MCP tools
-- [ ] 4. Supervisor and specialist agents
+- [x] 4. Supervisor and specialist agents
 - [ ] 5. Guardrails for tool use
 - [ ] 6. Evaluation and CI gates
 
