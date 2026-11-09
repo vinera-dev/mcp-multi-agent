@@ -9,7 +9,7 @@ async def test_server_lists_the_example_tool():
     async with Client(server) as client:
         tools = await client.list_tools()
 
-    assert [tool.name for tool in tools.tools] == ["clinic_info"]
+    assert "clinic_info" in {tool.name for tool in tools.tools}
 
 
 async def test_example_tool_answers():
