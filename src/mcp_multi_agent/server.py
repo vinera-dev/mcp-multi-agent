@@ -1,3 +1,4 @@
+import argparse
 from datetime import date, datetime
 from typing import Annotated
 
@@ -79,8 +80,20 @@ def build_server(
 server = build_server()
 
 
-def main() -> None:
-    server.run("stdio")
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Veterinary clinic MCP server")
+    parser.add_argument("--transport", choices=["stdio", "streamable-http"], default="stdio")
+    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=8000)
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> None:
+    args = parse_args(argv)
+    if args.transport == "stdio":
+        server.run("stdio")
+    else:
+        server.run("streamable-http", host=args.host, port=args.port)
 
 
 if __name__ == "__main__":

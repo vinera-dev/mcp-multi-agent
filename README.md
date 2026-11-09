@@ -2,7 +2,7 @@
 
 A Model Context Protocol (MCP) server and a multi-agent system that coordinates specialist agents through it.
 
-> **Status:** early development. The MCP server exposes the scheduling tools over stdio; the FAQ tool is next.
+> **Status:** early development. The MCP server exposes the scheduling tools over stdio; the FAQ tool and the HTTP transport are in; the agent is next.
 
 ## Purpose
 
@@ -39,10 +39,18 @@ npx @modelcontextprotocol/inspector --cli python -m mcp_multi_agent.server   --m
 
 The first command opens the web UI, the others run headless.
 
+The same tools are also available over streamable HTTP:
+
+```bash
+python -m mcp_multi_agent.server --transport streamable-http --port 8000
+```
+
+The endpoint is `http://127.0.0.1:8000/mcp`. The FAQ tool uses a small BM25 index with light stemming over the documents in `src/mcp_multi_agent/data/faq`, which is lexical only: it matches words, not meaning.
+
 ## Roadmap
 
 - [x] 1. MCP server with scheduling tools and tests
-- [ ] 2. FAQ tool backed by retrieval
+- [x] 2. FAQ tool backed by retrieval
 - [ ] 3. Single agent using the MCP tools
 - [ ] 4. Supervisor and specialist agents
 - [ ] 5. Guardrails for tool use
