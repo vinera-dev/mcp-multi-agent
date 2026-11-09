@@ -3,6 +3,7 @@ from datetime import date, datetime
 import pytest
 from pydantic import ValidationError
 
+from mcp_multi_agent.guard import TOOL_NOT_ALLOWED
 from mcp_multi_agent.llm import AssistantTurn, ScriptedChatModel, ToolCall
 from mcp_multi_agent.scheduling.repository import InMemoryAppointmentRepository
 from mcp_multi_agent.scheduling.service import SchedulingService
@@ -11,7 +12,6 @@ from mcp_multi_agent.team import (
     HOP_LIMIT_MESSAGE,
     LOOP_MESSAGE,
     SPECIALISTS,
-    TOOL_NOT_ALLOWED,
     Route,
     ask_team,
     build_team,
@@ -147,7 +147,9 @@ async def test_specialists_see_the_shared_conversation(repository):
 
         second_specialist_input = model.seen[1]
         assert any(m.get("content") == "Price is 120.00." for m in second_specialist_input)
-        assert second_specialist_input[0]["content"] == SPECIALISTS["scheduling"].system_prompt
+        assert second_specialist_input[0]["content"].startswith(
+            SPECIALISTS["scheduling"].system_prompt
+        )
 
 
 async def test_supervisor_sees_specialist_results(repository):
