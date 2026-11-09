@@ -7,6 +7,7 @@ from mcp.server.mcpserver.exceptions import ToolError
 from pydantic import Field
 
 from mcp_multi_agent.faq import FaqHit, FaqIndex, load_entries
+from mcp_multi_agent.pricing import Price, price_for
 from mcp_multi_agent.scheduling.models import Appointment, ServiceType
 from mcp_multi_agent.scheduling.repository import InMemoryAppointmentRepository
 from mcp_multi_agent.scheduling.service import SchedulingError, SchedulingService
@@ -73,6 +74,11 @@ def build_server(
     ) -> list[FaqHit]:
         """Search the clinic FAQ (hours, vaccines, grooming, exams, payments, cancellations)."""
         return faq_index.search(query, top_k)
+
+    @server.tool()
+    def get_price(service: ServiceType) -> Price:
+        """Get the price of a service and whether payment in installments is available."""
+        return price_for(service)
 
     return server
 
