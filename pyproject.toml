@@ -40,3 +40,6 @@ select = ["E", "F", "I", "B", "UP", "S", "C4", "SIM", "T20"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101"]
+
+[tool.setuptools.package-data]
+mcp_multi_agent = ["data/faq/*.md"]
